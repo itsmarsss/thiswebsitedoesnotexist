@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Parse the request body
-        const { fullPath } = await request.json();
+        let { fullPath } = await request.json();
 
         if (!fullPath) {
             return NextResponse.json(
@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Configure Gemini model
+        // Check if the path exceeds the maximum length
+        fullPath = fullPath.slice(0, 256);
+
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash-lite",
             generationConfig: {
