@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { generateRandomPath } from "@/lib/randomPaths";
+import Tooltip from "./Tooltip";
+import ToolButton from "./ToolButton";
 
 const MAX_HISTORY = 100;
 
@@ -35,25 +37,12 @@ export default function HoverToolbar() {
     const handleSoftReload = async () => {
         try {
             setIsRegenerating(true);
-            const response = await fetch("/api/generate", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ fullPath: window.location.pathname }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to regenerate content");
-            }
-
-            const data = await response.json();
-
-            // Get the iframe and update its content
             const iframe = document.querySelector("iframe");
             if (iframe?.contentDocument) {
+                const currentHTML =
+                    iframe.contentDocument.documentElement.outerHTML;
                 iframe.contentDocument.open();
-                iframe.contentDocument.write(data.html);
+                iframe.contentDocument.write(currentHTML);
                 iframe.contentDocument.close();
             }
         } catch (error) {
@@ -117,57 +106,51 @@ export default function HoverToolbar() {
                                 </h2>
 
                                 <div className="space-y-2">
-                                    <button
+                                    <ToolButton
+                                        icon="🔄"
+                                        text="Hard Reload"
+                                        tooltip="Regenerate with new content"
                                         onClick={() => window.location.reload()}
-                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                                    >
-                                        🔄 Hard Reload
-                                    </button>
+                                    />
 
-                                    <button
+                                    <ToolButton
+                                        icon="✨"
+                                        text="Soft Reload"
+                                        tooltip="Refresh the current content"
                                         onClick={handleSoftReload}
+                                        isLoading={isRegenerating}
                                         disabled={isRegenerating}
-                                        className={`w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left flex items-center justify-between ${
-                                            isRegenerating
-                                                ? "opacity-50 cursor-not-allowed"
-                                                : ""
-                                        }`}
-                                    >
-                                        <span>✨ Soft Reload</span>
-                                        {isRegenerating && (
-                                            <div className="animate-spin h-4 w-4 border-2 border-white/50 border-t-transparent rounded-full"></div>
-                                        )}
-                                    </button>
+                                    />
 
-                                    <button
+                                    <ToolButton
+                                        icon="🎲"
+                                        text="Random"
+                                        tooltip="Generate random website"
                                         onClick={handleRandomClick}
-                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                                    >
-                                        🎲 Random
-                                    </button>
+                                    />
 
-                                    <button
+                                    <ToolButton
+                                        icon="💾"
+                                        text="Download HTML"
+                                        tooltip="Download page HTML"
                                         onClick={handleDownload}
-                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                                    >
-                                        💾 Download HTML
-                                    </button>
+                                    />
 
-                                    <button
+                                    <ToolButton
+                                        icon="🐦"
+                                        text="Share on Twitter"
+                                        tooltip="Share this website on Twitter"
                                         onClick={handleShare}
-                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                                    >
-                                        🐦 Share on Twitter
-                                    </button>
+                                    />
 
-                                    <button
+                                    <ToolButton
+                                        icon="🏠"
+                                        text="Home"
+                                        tooltip="Return to home page"
                                         onClick={() =>
                                             (window.location.href = "/")
                                         }
-                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                                    >
-                                        🏠 Home
-                                    </button>
+                                    />
                                 </div>
                             </div>
 
@@ -187,40 +170,46 @@ export default function HoverToolbar() {
                                     <div className="font-bold mb-2 flex-none flex items-center justify-between">
                                         <span>History:</span>
                                         <div className="flex gap-1">
-                                            <button
-                                                onClick={() => {
-                                                    const container =
-                                                        document.querySelector(
-                                                            "#history-container"
-                                                        );
-                                                    if (container) {
-                                                        container.scrollBy({
-                                                            top: -41,
-                                                            behavior: "smooth",
-                                                        }); // 41px = element height (32) + margin (9)
-                                                    }
-                                                }}
-                                                className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white"
-                                            >
-                                                ▲
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    const container =
-                                                        document.querySelector(
-                                                            "#history-container"
-                                                        );
-                                                    if (container) {
-                                                        container.scrollBy({
-                                                            top: 41,
-                                                            behavior: "smooth",
-                                                        }); // 41px = element height (32) + margin (9)
-                                                    }
-                                                }}
-                                                className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white"
-                                            >
-                                                ▼
-                                            </button>
+                                            <Tooltip text="Scroll up">
+                                                <button
+                                                    onClick={() => {
+                                                        const container =
+                                                            document.querySelector(
+                                                                "#history-container"
+                                                            );
+                                                        if (container) {
+                                                            container.scrollBy({
+                                                                top: -41,
+                                                                behavior:
+                                                                    "smooth",
+                                                            }); // 41px = element height (32) + margin (9)
+                                                        }
+                                                    }}
+                                                    className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white cursor-pointer"
+                                                >
+                                                    ▲
+                                                </button>
+                                            </Tooltip>
+                                            <Tooltip text="Scroll down">
+                                                <button
+                                                    onClick={() => {
+                                                        const container =
+                                                            document.querySelector(
+                                                                "#history-container"
+                                                            );
+                                                        if (container) {
+                                                            container.scrollBy({
+                                                                top: 41,
+                                                                behavior:
+                                                                    "smooth",
+                                                            }); // 41px = element height (32) + margin (9)
+                                                        }
+                                                    }}
+                                                    className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white cursor-pointer"
+                                                >
+                                                    ▼
+                                                </button>
+                                            </Tooltip>
                                         </div>
                                     </div>
                                     <div className="h-48 relative">
@@ -232,7 +221,7 @@ export default function HoverToolbar() {
                                                 <a
                                                     key={index}
                                                     href={path}
-                                                    className="block px-2 py-1.5 mb-1 bg-black/20 hover:bg-black/30 rounded font-mono text-sm break-all transition-colors"
+                                                    className="block px-2 py-1.5 mb-1 bg-black/20 hover:bg-black/30 rounded font-mono text-sm break-all transition-colors cursor-pointer"
                                                 >
                                                     {path}
                                                 </a>
