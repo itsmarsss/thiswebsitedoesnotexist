@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const loadingMessages = [
     "Searching through the multiverse...",
@@ -135,6 +136,7 @@ export default function SlugPage() {
                     </div>
                 </div>
                 <Analytics />
+                <SpeedInsights />
             </div>
         );
     }
@@ -208,6 +210,7 @@ export default function SlugPage() {
                 sandbox="allow-scripts allow-same-origin"
             />
             <Analytics />
+            <SpeedInsights />
         </div>
     );
 }
