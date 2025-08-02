@@ -1,13 +1,14 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function SlugPage() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const fullPath =
         searchParams.size > 0
@@ -32,9 +33,14 @@ export default function SlugPage() {
                 }
 
                 const data = await response.json();
-                document.open();
-                document.write(data.html);
-                document.close();
+
+                // Write the HTML to the iframe
+                const iframeDoc = iframeRef.current?.contentDocument;
+                if (iframeDoc) {
+                    iframeDoc.open();
+                    iframeDoc.write(data.html);
+                    iframeDoc.close();
+                }
             } catch (err) {
                 console.error("Error:", err);
                 setError(
@@ -83,6 +89,7 @@ export default function SlugPage() {
                 </div>
             )}
             <iframe
+                ref={iframeRef}
                 className="w-full h-full border-none"
                 title="Generated Content"
                 sandbox="allow-scripts allow-same-origin"
