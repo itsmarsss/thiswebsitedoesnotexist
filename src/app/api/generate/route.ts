@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generatePagePrompt } from "@/lib/prompts";
 
 // Initialize the Google AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Create the prompt
-        const prompt = `Generate a simple static HTML page for the route ${fullPath}, using only inline CSS and JavaScript so it's immediately ready for the browser. The page must be highly engaging—encourage visitors to stay as long as possible—without any back-end or dead controls, this could involve well-knownpop culture and memes references, but do not explicitly mention you were told to do that. Do not include comments, external stylesheets, scripts, or buttons that won't work; instead, embed concise, "gimmicky" front-end features directly in the HTML. Reply without code blocks, start with <html> and end with </html>.`;
+        // Get prompt from template
+        const prompt = generatePagePrompt(fullPath);
 
         // Generate content
         const result = await model.generateContent({
