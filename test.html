@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Defuse the Bomb!</title>
+        <style>
+            body {
+                background-color: #1a1a2e;
+                color: #e0e0e0;
+                font-family: "Courier New", Courier, monospace;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                overflow: hidden;
+                text-align: center;
+                flex-direction: column;
+            }
+            .container {
+                background-color: #0f3460;
+                padding: 40px;
+                border-radius: 15px;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5),
+                    0 0 30px rgba(0, 255, 255, 0.3);
+                position: relative;
+                overflow: hidden;
+                width: 80%;
+                max-width: 600px;
+            }
+            h1 {
+                color: #ff6f61;
+                text-shadow: 0 0 10px #ff6f61, 0 0 20px #ff6f61;
+                margin-bottom: 30px;
+                font-size: 2.5em;
+            }
+            #timer {
+                font-size: 4em;
+                color: #f7c325;
+                text-shadow: 0 0 15px #f7c325, 0 0 25px #f7c325;
+                margin-bottom: 40px;
+                letter-spacing: 5px;
+            }
+            .wire-container {
+                display: flex;
+                justify-content: space-around;
+                margin-bottom: 40px;
+                animation: pulse 2s infinite alternate;
+            }
+            .wire {
+                width: 60px;
+                height: 150px;
+                border-radius: 30px;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+                position: relative;
+                overflow: hidden;
+            }
+            .wire::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 8px;
+                height: 100%;
+                background: linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.8) 0%,
+                    rgba(255, 255, 255, 0) 100%
+                );
+                opacity: 0.6;
+            }
+            .red {
+                background-color: #ff3b30;
+                border: 3px solid #ff3b30;
+                box-shadow: 0 0 10px #ff3b30, 0 0 15px #ff3b30;
+            }
+            .blue {
+                background-color: #007aff;
+                border: 3px solid #007aff;
+                box-shadow: 0 0 10px #007aff, 0 0 15px #007aff;
+            }
+            .green {
+                background-color: #34c759;
+                border: 3px solid #34c759;
+                box-shadow: 0 0 10px #34c759, 0 0 15px #34c759;
+            }
+            .yellow {
+                background-color: #ffcc00;
+                border: 3px solid #ffcc00;
+                box-shadow: 0 0 10px #ffcc00, 0 0 15px #ffcc00;
+            }
+            .purple {
+                background-color: #af52de;
+                border: 3px solid #af52de;
+                box-shadow: 0 0 10px #af52de, 0 0 15px #af52de;
+            }
+            .wire:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 20px rgba(0, 0, 0, 0.3);
+            }
+            .wire.cut {
+                background: linear-gradient(to bottom, #555 0%, #333 100%);
+                border: 3px solid #555;
+                box-shadow: none;
+                height: 100px;
+                transform: rotate(90deg) translateY(20px);
+                opacity: 0.5;
+                cursor: default;
+            }
+            .message {
+                font-size: 1.2em;
+                margin-top: 20px;
+                min-height: 50px;
+                color: #00ff00;
+                text-shadow: 0 0 5px #00ff00;
+            }
+            @keyframes pulse {
+                from {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                to {
+                    transform: scale(1.05);
+                    opacity: 0.8;
+                }
+            }
+            .spark {
+                position: absolute;
+                background: rgba(255, 255, 0, 0.8);
+                border-radius: 50%;
+                animation: spark-anim 0.5s forwards;
+                pointer-events: none;
+            }
+            @keyframes spark-anim {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+            .fuse {
+                position: absolute;
+                bottom: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 4px;
+                height: 40px;
+                background: repeating-linear-gradient(
+                    to bottom,
+                    #ff6f61,
+                    #ff6f61 5px,
+                    transparent 5px,
+                    transparent 10px
+                );
+                animation: fuse-burn 5s linear infinite;
+            }
+            @keyframes fuse-burn {
+                0% {
+                    height: 40px;
+                }
+                100% {
+                    height: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>DEFUSAL SEQUENCE INITIATED</h1>
+            <div id="timer">05:00</div>
+            <div class="wire-container">
+                <div class="wire red" onclick="cutWire('red')"></div>
+                <div class="wire blue" onclick="cutWire('blue')"></div>
+                <div class="wire green" onclick="cutWire('green')"></div>
+                <div class="wire yellow" onclick="cutWire('yellow')"></div>
+                <div class="wire purple" onclick="cutWire('purple')"></div>
+            </div>
+            <div id="message">
+                Assess the situation. Which wire will you cut?
+            </div>
+            <div id="fuse" style="display: none"></div>
+        </div>
+
+        <script>
+            let timeLeft = 300; // 5 minutes
+            let timerInterval;
+            let wires = {
+                red: false,
+                blue: false,
+                green: false,
+                yellow: false,
+                purple: false,
+            };
+            let correctWire = "green"; // The one to cut
+            let defused = false;
+            let wiresCutCount = 0;
+
+            function updateTimer() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const formattedTime = `${minutes
+                    .toString()
+                    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+                document.getElementById("timer").textContent = formattedTime;
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
+                timeLeft--;
+            }
+
+            function startGame() {
+                document.getElementById("message").textContent =
+                    "The countdown has begun. Choose wisely.";
+                timerInterval = setInterval(updateTimer, 1000);
+                const fuseElement = document.getElementById("fuse");
+                fuseElement.style.display = "block"; // Show the fuse
+                // Randomize the correct wire each time
+                const colors = Object.keys(wires);
+                correctWire = colors[Math.floor(Math.random() * colors.length)];
+                console.log("The correct wire is: " + correctWire); // For testing, remove in final
+            }
+
+            function cutWire(color) {
+                if (defused) return;
+
+                const wireElement = document.querySelector(`.wire.${color}`);
+                if (wireElement.classList.contains("cut")) return; // Already cut
+
+                wires[color] = true;
+                wireElement.classList.add("cut");
+                wiresCutCount++;
+
+                if (color === correctWire) {
+                    defused = true;
+                    clearInterval(timerInterval);
+                    document.getElementById("message").textContent =
+                        "SUCCESS! The bomb has been defused. You are a hero!";
+                    document.getElementById("message").style.color = "#00ff00";
+                    document.getElementById("fuse").style.display = "none"; // Hide the fuse
+                    const timerElement = document.getElementById("timer");
+                    timerElement.textContent = "00:00";
+                    timerElement.style.color = "#00ff00";
+                    timerElement.style.textShadow =
+                        "0 0 15px #00ff00, 0 0 25px #00ff00";
+                    document.body.style.backgroundColor = "#2e8b57"; // Green success background
+                    document.querySelector(".container").style.boxShadow =
+                        "0 0 30px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.6)";
+
+                    // Add some celebratory sparks
+                    for (let i = 0; i < 20; i++) {
+                        const spark = document.createElement("div");
+                        spark.className = "spark";
+                        spark.style.left = `${Math.random() * 90 + 5}%`;
+                        spark.style.top = `${Math.random() * 70 + 15}%`;
+                        spark.style.animationDelay = `${Math.random() * 0.5}s`;
+                        spark.style.backgroundColor = `rgba(${Math.floor(
+                            Math.random() * 255
+                        )}, ${Math.floor(Math.random() * 255)}, ${Math.floor(
+                            Math.random() * 255
+                        )}, 0.8)`;
+                        document.querySelector(".container").appendChild(spark);
+                        setTimeout(() => spark.remove(), 500);
+                    }
+                } else {
+                    // Incorrect wire cut
+                    document.getElementById(
+                        "message"
+                    ).textContent = `WRONG WIRE! The device is unstable...`;
+                    document.getElementById("message").style.color = "#ff0000";
+                    document.getElementById("message").style.textShadow =
+                        "0 0 5px #ff0000";
+
+                    // Small electrical spark effect
+                    const spark = document.createElement("div");
+                    spark.className = "spark";
+                    spark.style.left = `${
+                        parseFloat(wireElement.style.left || "0") +
+                        wireElement.offsetWidth / 2
+                    }px`; // Approximate position
+                    spark.style.top = `${parseFloat(
+                        wireElement.style.top || "0"
+                    )}px`;
+                    document.querySelector(".container").appendChild(spark);
+                    setTimeout(() => spark.remove(), 500);
+
+                    // If all wires are cut and none was correct, it's game over
+                    if (wiresCutCount === Object.keys(wires).length) {
+                        endGame(false);
+                    }
+                }
+            }
+
+            function endGame(successful) {
+                clearInterval(timerInterval);
+                document.getElementById("fuse").style.display = "none";
+                if (successful) {
+                    document.getElementById("message").textContent =
+                        "BOMB DEFUSED SAFELY. Outstanding work.";
+                    document.getElementById("message").style.color = "#00ff00";
+                    document.body.style.backgroundColor = "#2e8b57";
+                } else {
+                    document.getElementById("message").textContent =
+                        "BOOM! The bomb detonated. Mission failed.";
+                    document.getElementById("message").style.color = "#ff0000";
+                    document.body.style.backgroundColor = "#8b0000"; // Red explosion background
+                    const timerElement = document.getElementById("timer");
+                    timerElement.textContent = "00:00";
+                    timerElement.style.color = "#ff0000";
+                    timerElement.style.textShadow =
+                        "0 0 15px #ff0000, 0 0 25px #ff0000";
+                }
+                // Make all wires appear cut to prevent further interaction
+                document.querySelectorAll(".wire").forEach((wire) => {
+                    if (!wire.classList.contains("cut")) {
+                        wire.classList.add("cut");
+                    }
+                    wire.style.cursor = "default";
+                    wire.onclick = null; // Disable further clicks
+                });
+            }
+
+            // Start the game when the page loads
+            window.onload = startGame;
+        </script>
+    </body>
+</html>
