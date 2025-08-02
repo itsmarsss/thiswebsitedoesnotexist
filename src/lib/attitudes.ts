@@ -30,7 +30,7 @@ export const attitudes = [
         weight: 10,
     },
     {
-        name: "Existential Error Messages",
+        name: "Philosophical Existentialism",
         style: "turning everything into deep philosophical questions about existence and meaning",
         weight: 10,
     },
