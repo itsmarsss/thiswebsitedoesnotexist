@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
         const generatedHTML = response.text();
 
         console.log("Generated HTML for path:", fullPath);
+        console.log(prompt);
 
         return NextResponse.json({ html: generatedHTML });
     } catch (error) {

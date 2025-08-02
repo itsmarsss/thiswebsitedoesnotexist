@@ -7,6 +7,7 @@ import { generateRandomPath } from "@/lib/randomPaths";
 import Tooltip from "./Tooltip";
 import MotionToolButton from "./MotionToolButton";
 import SocialIcon from "./SocialIcon";
+import Icon from "./Icon";
 
 const container: Variants = {
     hidden: {
@@ -183,7 +184,9 @@ export default function HoverToolbar() {
                                                 className="bg-black/20 backdrop-blur rounded-xl p-2 space-y-1 ring-1 ring-white/10"
                                             >
                                                 <MotionToolButton
-                                                    icon={<span>🔄</span>}
+                                                    icon={
+                                                        <Icon type="refresh" />
+                                                    }
                                                     text="Hard Reload"
                                                     tooltip="Regenerate with new content"
                                                     onClick={() =>
@@ -192,7 +195,9 @@ export default function HoverToolbar() {
                                                 />
 
                                                 <MotionToolButton
-                                                    icon={<span>✨</span>}
+                                                    icon={
+                                                        <Icon type="sparkles" />
+                                                    }
                                                     text="Soft Reload"
                                                     tooltip="Refresh the current content"
                                                     onClick={handleSoftReload}
@@ -206,28 +211,30 @@ export default function HoverToolbar() {
                                                 className="bg-black/20 backdrop-blur rounded-xl p-2 space-y-1 ring-1 ring-white/10"
                                             >
                                                 <MotionToolButton
-                                                    icon={<span>🎲</span>}
+                                                    icon={<Icon type="dice" />}
                                                     text="Random"
                                                     tooltip="Generate random website"
                                                     onClick={handleRandomClick}
                                                 />
 
                                                 <MotionToolButton
-                                                    icon={<span>💾</span>}
+                                                    icon={
+                                                        <Icon type="download" />
+                                                    }
                                                     text="Download HTML"
                                                     tooltip="Download page HTML"
                                                     onClick={handleDownload}
                                                 />
 
                                                 <MotionToolButton
-                                                    icon={<span>🐦</span>}
+                                                    icon={<Icon type="share" />}
                                                     text="Share on Twitter"
                                                     tooltip="Share this website on Twitter"
                                                     onClick={handleShare}
                                                 />
 
                                                 <MotionToolButton
-                                                    icon={<span>🏠</span>}
+                                                    icon={<Icon type="home" />}
                                                     text="Home"
                                                     tooltip="Return to home page"
                                                     onClick={() =>
