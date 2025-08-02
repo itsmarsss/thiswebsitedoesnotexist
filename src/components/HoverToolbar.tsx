@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { generateRandomPath } from "@/lib/randomPaths";
 
-const MAX_HISTORY = 5;
+const MAX_HISTORY = 100;
 
 export default function HoverToolbar() {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
     const [history, setHistory] = useState<string[]>([]);
     const [isRegenerating, setIsRegenerating] = useState(false);
 
@@ -101,101 +101,156 @@ export default function HoverToolbar() {
 
     return (
         <div
-            className={`fixed top-0 right-0 transition-all duration-300 z-[9999] ${
+            className={`fixed top-0 right-0 z-[9999] ${
                 isExpanded ? "w-64" : "w-12"
-            }`}
+            } transition-[width] duration-300 h-screen`}
             onMouseEnter={() => setIsExpanded(true)}
             onMouseLeave={() => setIsExpanded(false)}
         >
-            <div className="bg-black/80 backdrop-blur-lg text-white h-screen p-3 shadow-lg">
+            <div className="bg-black/80 backdrop-blur-lg text-white h-full shadow-lg relative">
                 {isExpanded ? (
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-bold mb-4">Tools</h2>
+                    <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
+                        <div className="p-3 min-h-full flex flex-col">
+                            <div className="flex-none">
+                                <h2 className="text-lg font-bold mb-4">
+                                    Tools
+                                </h2>
 
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                        >
-                            🔄 Hard Reload
-                        </button>
+                                <div className="space-y-2">
+                                    <button
+                                        onClick={() => window.location.reload()}
+                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
+                                    >
+                                        🔄 Hard Reload
+                                    </button>
 
-                        <button
-                            onClick={handleSoftReload}
-                            disabled={isRegenerating}
-                            className={`w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left flex items-center justify-between ${
-                                isRegenerating
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                            }`}
-                        >
-                            <span>✨ Soft Reload</span>
-                            {isRegenerating && (
-                                <div className="animate-spin h-4 w-4 border-2 border-white/50 border-t-transparent rounded-full"></div>
-                            )}
-                        </button>
+                                    <button
+                                        onClick={handleSoftReload}
+                                        disabled={isRegenerating}
+                                        className={`w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left flex items-center justify-between ${
+                                            isRegenerating
+                                                ? "opacity-50 cursor-not-allowed"
+                                                : ""
+                                        }`}
+                                    >
+                                        <span>✨ Soft Reload</span>
+                                        {isRegenerating && (
+                                            <div className="animate-spin h-4 w-4 border-2 border-white/50 border-t-transparent rounded-full"></div>
+                                        )}
+                                    </button>
 
-                        <button
-                            onClick={handleRandomClick}
-                            className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                        >
-                            🎲 Random
-                        </button>
+                                    <button
+                                        onClick={handleRandomClick}
+                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
+                                    >
+                                        🎲 Random
+                                    </button>
 
-                        <button
-                            onClick={handleDownload}
-                            className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                        >
-                            💾 Download HTML
-                        </button>
+                                    <button
+                                        onClick={handleDownload}
+                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
+                                    >
+                                        💾 Download HTML
+                                    </button>
 
-                        <button
-                            onClick={handleShare}
-                            className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                        >
-                            🐦 Share on Twitter
-                        </button>
+                                    <button
+                                        onClick={handleShare}
+                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
+                                    >
+                                        🐦 Share on Twitter
+                                    </button>
 
-                        <button
-                            onClick={() => (window.location.href = "/")}
-                            className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
-                        >
-                            🏠 Home
-                        </button>
-
-                        <div className="border-t border-white/20 my-4"></div>
-
-                        <div className="text-sm">
-                            <div className="font-bold mb-2">Current Path:</div>
-                            <div className="bg-black/20 rounded-lg p-2 font-mono text-sm break-all">
-                                {window.location.pathname}
-                            </div>
-                        </div>
-
-                        {history.length > 0 && (
-                            <div className="text-sm">
-                                <div className="font-bold mb-2">History:</div>
-                                <div className="space-y-1">
-                                    {history.map((path, index) => (
-                                        <a
-                                            key={index}
-                                            href={path}
-                                            className="block px-2 py-1.5 bg-black/20 hover:bg-black/30 rounded font-mono text-sm break-all transition-colors"
-                                        >
-                                            {path}
-                                        </a>
-                                    ))}
+                                    <button
+                                        onClick={() =>
+                                            (window.location.href = "/")
+                                        }
+                                        className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
+                                    >
+                                        🏠 Home
+                                    </button>
                                 </div>
                             </div>
-                        )}
 
-                        <div className="absolute bottom-4 left-4 right-4">
-                            <div className="text-xs opacity-50 text-center">
-                                Hover to expand/collapse
+                            <div className="border-t border-white/20 my-4 flex-none"></div>
+
+                            <div className="text-sm flex-none">
+                                <div className="font-bold mb-2">
+                                    Current Path:
+                                </div>
+                                <div className="bg-black/20 rounded-lg p-2 font-mono text-sm break-all">
+                                    {window.location.pathname}
+                                </div>
+                            </div>
+
+                            {history.length > 0 && (
+                                <div className="text-sm mt-4 flex flex-col flex-none">
+                                    <div className="font-bold mb-2 flex-none flex items-center justify-between">
+                                        <span>History:</span>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => {
+                                                    const container =
+                                                        document.querySelector(
+                                                            "#history-container"
+                                                        );
+                                                    if (container) {
+                                                        container.scrollBy({
+                                                            top: -41,
+                                                            behavior: "smooth",
+                                                        }); // 41px = element height (32) + margin (9)
+                                                    }
+                                                }}
+                                                className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white"
+                                            >
+                                                ▲
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const container =
+                                                        document.querySelector(
+                                                            "#history-container"
+                                                        );
+                                                    if (container) {
+                                                        container.scrollBy({
+                                                            top: 41,
+                                                            behavior: "smooth",
+                                                        }); // 41px = element height (32) + margin (9)
+                                                    }
+                                                }}
+                                                className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white"
+                                            >
+                                                ▼
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="h-48 relative">
+                                        <div
+                                            id="history-container"
+                                            className="overflow-y-auto absolute inset-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]"
+                                        >
+                                            {history.map((path, index) => (
+                                                <a
+                                                    key={index}
+                                                    href={path}
+                                                    className="block px-2 py-1.5 mb-1 bg-black/20 hover:bg-black/30 rounded font-mono text-sm break-all transition-colors"
+                                                >
+                                                    {path}
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="mt-4 pt-4 border-t border-white/20 flex-none">
+                                <div className="text-xs opacity-50 text-center">
+                                    Hover to expand/collapse
+                                </div>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="absolute top-0 left-0 w-12 h-screen flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
                         <div className="rotate-90 whitespace-nowrap text-sm opacity-70">
                             Hover here for tools
                         </div>
