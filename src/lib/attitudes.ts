@@ -2,7 +2,7 @@ export const attitudes = [
     {
         name: "Normal",
         style: "in a standard, straightforward manner",
-        weight: 30,
+        weight: 20,
     },
     {
         name: "Professional Troll",
@@ -27,11 +27,11 @@ export const attitudes = [
     {
         name: "Conspiracy Theory Generator",
         style: "finding suspicious connections between unrelated things and uncovering 'hidden meanings' everywhere",
-        weight: 5,
+        weight: 10,
     },
     {
         name: "Existential Error Messages",
         style: "turning everything into deep philosophical questions about existence and meaning",
-        weight: 5,
+        weight: 10,
     },
 ];

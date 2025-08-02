@@ -135,7 +135,7 @@ export default function HoverToolbar() {
                 onMouseEnter={() => setIsExpanded(true)}
             />
             <motion.div
-                className="fixed top-4 right-4 z-[9999] h-[calc(100vh-2rem)] overflow-hidden"
+                className="fixed top-4 right-4 z-[9999] h-[calc(100vh-2rem)]"
                 animate={{
                     width: isExpanded ? "20rem" : "4rem",
                     x: isExpanded ? 0 : 10,
