@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { generateRandomPath } from "@/lib/randomPaths";
 import Tooltip from "./Tooltip";
 import ToolButton from "./ToolButton";
+import SocialIcon from "./SocialIcon";
 
 const MAX_HISTORY = 100;
 
@@ -14,6 +15,12 @@ export default function HoverToolbar() {
     const [isExpanded, setIsExpanded] = useState(true);
     const [history, setHistory] = useState<string[]>([]);
     const [isRegenerating, setIsRegenerating] = useState(false);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setIsExpanded(false);
+        }, 2000);
+    }, []);
 
     // Load history on mount and save new paths
     useEffect(() => {
@@ -109,14 +116,14 @@ export default function HoverToolbar() {
 
                                 <div className="space-y-2">
                                     <ToolButton
-                                        icon="🔄"
+                                        icon={<span>🔄</span>}
                                         text="Hard Reload"
                                         tooltip="Regenerate with new content"
-                                        onClick={() => router.refresh()}
+                                        onClick={() => window.location.reload()}
                                     />
 
                                     <ToolButton
-                                        icon="✨"
+                                        icon={<span>✨</span>}
                                         text="Soft Reload"
                                         tooltip="Refresh the current content"
                                         onClick={handleSoftReload}
@@ -125,28 +132,28 @@ export default function HoverToolbar() {
                                     />
 
                                     <ToolButton
-                                        icon="🎲"
+                                        icon={<span>🎲</span>}
                                         text="Random"
                                         tooltip="Generate random website"
                                         onClick={handleRandomClick}
                                     />
 
                                     <ToolButton
-                                        icon="💾"
+                                        icon={<span>💾</span>}
                                         text="Download HTML"
                                         tooltip="Download page HTML"
                                         onClick={handleDownload}
                                     />
 
                                     <ToolButton
-                                        icon="🐦"
+                                        icon={<span>🐦</span>}
                                         text="Share on Twitter"
                                         tooltip="Share this website on Twitter"
                                         onClick={handleShare}
                                     />
 
                                     <ToolButton
-                                        icon="🏠"
+                                        icon={<span>🏠</span>}
                                         text="Home"
                                         tooltip="Return to home page"
                                         onClick={() => router.push("/")}
@@ -235,6 +242,40 @@ export default function HoverToolbar() {
                             )}
 
                             <div className="mt-4 pt-4 border-t border-white/20 flex-none">
+                                <div className="flex gap-2 mb-4">
+                                    <ToolButton
+                                        icon={
+                                            <SocialIcon
+                                                type="github"
+                                                className="w-5 h-5"
+                                            />
+                                        }
+                                        text="GitHub"
+                                        tooltip="Visit my GitHub profile"
+                                        onClick={() =>
+                                            window.open(
+                                                "https://github.com/itsmarsss",
+                                                "_blank"
+                                            )
+                                        }
+                                    />
+                                    <ToolButton
+                                        icon={
+                                            <SocialIcon
+                                                type="x"
+                                                className="w-5 h-5"
+                                            />
+                                        }
+                                        text="Twi- X"
+                                        tooltip="Visit my X profile"
+                                        onClick={() =>
+                                            window.open(
+                                                "https://x.com/__kennywu__",
+                                                "_blank"
+                                            )
+                                        }
+                                    />
+                                </div>
                                 <div className="text-xs opacity-50 text-center">
                                     Hover to expand/collapse
                                 </div>
