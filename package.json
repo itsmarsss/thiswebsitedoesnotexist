@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "framer-motion": "^12.23.12",
     "mime": "^4.0.7",
     "next": "15.4.5",
     "react": "19.1.0",

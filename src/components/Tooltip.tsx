@@ -41,9 +41,9 @@ export default function Tooltip({ text, children, delay = 800 }: TooltipProps) {
         >
             {children}
             {isVisible && (
-                <div className="absolute z-50 px-2 py-1 text-sm text-white bg-black/90 rounded shadow-lg whitespace-nowrap left-1/2 -translate-x-1/2 -bottom-8 z-[10000]">
+                <div className="absolute px-2 py-1 text-sm text-white bg-black/90 rounded shadow-lg whitespace-nowrap left-1/2 -translate-x-1/2 -top-8 z-[10000]">
                     {text}
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45"></div>
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45"></div>
                 </div>
             )}
         </div>

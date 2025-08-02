@@ -2,12 +2,42 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { generateRandomPath } from "@/lib/randomPaths";
 import Tooltip from "./Tooltip";
-import ToolButton from "./ToolButton";
+import MotionToolButton from "./MotionToolButton";
 import SocialIcon from "./SocialIcon";
 
-const MAX_HISTORY = 100;
+const container: Variants = {
+    hidden: {
+        opacity: 0,
+        transition: { staggerChildren: 0.05, staggerDirection: -1 },
+    },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.05,
+            delayChildren: 0.05,
+        },
+    },
+};
+
+const item: Variants = {
+    hidden: {
+        opacity: 0,
+        y: 10,
+        transition: { duration: 0.2 },
+    },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 500,
+            damping: 25,
+        },
+    },
+};
 
 export default function HoverToolbar() {
     const router = useRouter();
@@ -36,7 +66,7 @@ export default function HoverToolbar() {
                 const newHistory = [
                     pathname,
                     ...prev.filter((path) => path !== pathname),
-                ].slice(0, MAX_HISTORY);
+                ].slice(0, 100); // Keep MAX_HISTORY logic
                 localStorage.setItem("pathHistory", JSON.stringify(newHistory));
                 return newHistory;
             });
@@ -98,198 +128,326 @@ export default function HoverToolbar() {
     };
 
     return (
-        <div
-            className={`fixed top-0 right-0 z-[9999] ${
-                isExpanded ? "w-64" : "w-12"
-            } transition-[width] duration-300 h-screen`}
-            onMouseEnter={() => setIsExpanded(true)}
-            onMouseLeave={() => setIsExpanded(false)}
-        >
-            <div className="bg-black/80 backdrop-blur-lg text-white h-full shadow-lg relative">
-                {isExpanded ? (
-                    <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
-                        <div className="p-3 min-h-full flex flex-col">
-                            <div className="flex-none">
-                                <h2 className="text-lg font-bold mb-4">
-                                    Tools
-                                </h2>
-
-                                <div className="space-y-2">
-                                    <ToolButton
-                                        icon={<span>🔄</span>}
-                                        text="Hard Reload"
-                                        tooltip="Regenerate with new content"
-                                        onClick={() => window.location.reload()}
-                                    />
-
-                                    <ToolButton
-                                        icon={<span>✨</span>}
-                                        text="Soft Reload"
-                                        tooltip="Refresh the current content"
-                                        onClick={handleSoftReload}
-                                        isLoading={isRegenerating}
-                                        disabled={isRegenerating}
-                                    />
-
-                                    <ToolButton
-                                        icon={<span>🎲</span>}
-                                        text="Random"
-                                        tooltip="Generate random website"
-                                        onClick={handleRandomClick}
-                                    />
-
-                                    <ToolButton
-                                        icon={<span>💾</span>}
-                                        text="Download HTML"
-                                        tooltip="Download page HTML"
-                                        onClick={handleDownload}
-                                    />
-
-                                    <ToolButton
-                                        icon={<span>🐦</span>}
-                                        text="Share on Twitter"
-                                        tooltip="Share this website on Twitter"
-                                        onClick={handleShare}
-                                    />
-
-                                    <ToolButton
-                                        icon={<span>🏠</span>}
-                                        text="Home"
-                                        tooltip="Return to home page"
-                                        onClick={() => router.push("/")}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="border-t border-white/20 my-4 flex-none"></div>
-
-                            <div className="text-sm flex-none">
-                                <div className="font-bold mb-2">
-                                    Current Path:
-                                </div>
-                                <div className="bg-black/20 rounded-lg p-2 font-mono text-sm break-all">
-                                    {pathname}
-                                </div>
-                            </div>
-
-                            {history.length > 0 && (
-                                <div className="text-sm mt-4 flex flex-col flex-none">
-                                    <div className="font-bold mb-2 flex-none flex items-center justify-between">
-                                        <span>History:</span>
-                                        <div className="flex gap-1">
-                                            <Tooltip text="Scroll up">
-                                                <button
-                                                    onClick={() => {
-                                                        const container =
-                                                            document.querySelector(
-                                                                "#history-container"
-                                                            );
-                                                        if (container) {
-                                                            container.scrollBy({
-                                                                top: -41,
-                                                                behavior:
-                                                                    "smooth",
-                                                            }); // 41px = element height (32) + margin (9)
-                                                        }
-                                                    }}
-                                                    className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white cursor-pointer"
-                                                >
-                                                    ▲
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip text="Scroll down">
-                                                <button
-                                                    onClick={() => {
-                                                        const container =
-                                                            document.querySelector(
-                                                                "#history-container"
-                                                            );
-                                                        if (container) {
-                                                            container.scrollBy({
-                                                                top: 41,
-                                                                behavior:
-                                                                    "smooth",
-                                                            }); // 41px = element height (32) + margin (9)
-                                                        }
-                                                    }}
-                                                    className="w-8 h-6 flex items-center justify-center hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white cursor-pointer"
-                                                >
-                                                    ▼
-                                                </button>
-                                            </Tooltip>
-                                        </div>
-                                    </div>
-                                    <div className="h-48 relative">
-                                        <div
-                                            id="history-container"
-                                            className="overflow-y-auto absolute inset-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]"
+        <div className="relative">
+            <div
+                className="fixed top-0 right-0 w-24 h-screen z-[9998] bg-transparent"
+                onMouseEnter={() => setIsExpanded(true)}
+            />
+            <motion.div
+                className="fixed top-4 right-4 z-[9999] h-[calc(100vh-2rem)] overflow-hidden"
+                animate={{
+                    width: isExpanded ? "20rem" : "4rem",
+                    x: isExpanded ? 0 : 10,
+                }}
+                transition={{
+                    duration: 0.2,
+                    ease: [0.2, 0, 0, 1],
+                }}
+                onMouseLeave={() => setIsExpanded(false)}
+                initial={false}
+            >
+                <motion.div
+                    className="bg-black/40 backdrop-blur-2xl text-white h-full relative rounded-2xl ring-1 ring-white/20"
+                    animate={{
+                        scale: isExpanded ? 1 : 0.98,
+                    }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none rounded-2xl" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40 pointer-events-none rounded-2xl" />
+                    <AnimatePresence mode="wait">
+                        {isExpanded ? (
+                            <motion.div
+                                key="expanded"
+                                className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]"
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={container}
+                            >
+                                <div className="p-6 pb-24 min-h-full flex flex-col gap-3 relative">
+                                    <div className="flex-none">
+                                        <motion.h2
+                                            variants={item}
+                                            className="text-md font-bold mb-1 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent tracking-tight"
                                         >
-                                            {history.map((path, index) => (
-                                                <a
-                                                    key={index}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        router.push(path);
-                                                    }}
-                                                    className="block px-2 py-1.5 mb-1 bg-black/20 hover:bg-black/30 rounded font-mono text-sm break-all transition-colors cursor-pointer"
-                                                >
-                                                    {path}
-                                                </a>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                            Tools
+                                        </motion.h2>
 
-                            <div className="mt-4 pt-4 border-t border-white/20 flex-none">
-                                <div className="flex gap-2 mb-4">
-                                    <ToolButton
-                                        icon={
-                                            <SocialIcon
-                                                type="github"
-                                                className="w-5 h-5"
+                                        <motion.div
+                                            variants={container}
+                                            className="space-y-2"
+                                        >
+                                            <motion.div
+                                                variants={item}
+                                                className="bg-black/20 backdrop-blur rounded-xl p-2 space-y-1 ring-1 ring-white/10"
+                                            >
+                                                <MotionToolButton
+                                                    icon={<span>🔄</span>}
+                                                    text="Hard Reload"
+                                                    tooltip="Regenerate with new content"
+                                                    onClick={() =>
+                                                        window.location.reload()
+                                                    }
+                                                />
+
+                                                <MotionToolButton
+                                                    icon={<span>✨</span>}
+                                                    text="Soft Reload"
+                                                    tooltip="Refresh the current content"
+                                                    onClick={handleSoftReload}
+                                                    isLoading={isRegenerating}
+                                                    disabled={isRegenerating}
+                                                />
+                                            </motion.div>
+
+                                            <motion.div
+                                                variants={item}
+                                                className="bg-black/20 backdrop-blur rounded-xl p-2 space-y-1 ring-1 ring-white/10"
+                                            >
+                                                <MotionToolButton
+                                                    icon={<span>🎲</span>}
+                                                    text="Random"
+                                                    tooltip="Generate random website"
+                                                    onClick={handleRandomClick}
+                                                />
+
+                                                <MotionToolButton
+                                                    icon={<span>💾</span>}
+                                                    text="Download HTML"
+                                                    tooltip="Download page HTML"
+                                                    onClick={handleDownload}
+                                                />
+
+                                                <MotionToolButton
+                                                    icon={<span>🐦</span>}
+                                                    text="Share on Twitter"
+                                                    tooltip="Share this website on Twitter"
+                                                    onClick={handleShare}
+                                                />
+
+                                                <MotionToolButton
+                                                    icon={<span>🏠</span>}
+                                                    text="Home"
+                                                    tooltip="Return to home page"
+                                                    onClick={() =>
+                                                        router.push("/")
+                                                    }
+                                                />
+                                            </motion.div>
+                                        </motion.div>
+                                    </div>
+
+                                    <motion.div
+                                        variants={item}
+                                        className="flex-none"
+                                    >
+                                        <div className="text-sm">
+                                            <motion.div
+                                                variants={item}
+                                                className="font-medium mb-1 text-white/90"
+                                            >
+                                                Current Path
+                                            </motion.div>
+                                            <motion.div
+                                                variants={item}
+                                                className="bg-black/20 backdrop-blur rounded-xl p-3 font-mono text-sm break-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] ring-1 ring-white/10"
+                                            >
+                                                <div className="truncate">
+                                                    {pathname}
+                                                </div>
+                                            </motion.div>
+                                        </div>
+                                    </motion.div>
+
+                                    {history.length > 0 && (
+                                        <motion.div
+                                            variants={item}
+                                            className="text-sm flex-none"
+                                        >
+                                            <motion.div
+                                                variants={item}
+                                                className="font-medium mb-1 flex items-center justify-between text-white/90"
+                                            >
+                                                <span className="truncate">
+                                                    History
+                                                </span>
+                                                <div className="flex gap-1 flex-none ml-2">
+                                                    <Tooltip text="Scroll up">
+                                                        <motion.button
+                                                            variants={item}
+                                                            onClick={() => {
+                                                                const container =
+                                                                    document.querySelector(
+                                                                        "#history-container"
+                                                                    );
+                                                                if (container) {
+                                                                    container.scrollBy(
+                                                                        {
+                                                                            top: -41,
+                                                                            behavior:
+                                                                                "smooth",
+                                                                        }
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className="w-8 h-6 flex items-center justify-center bg-black/20 hover:bg-black/40 rounded-lg transition-all duration-150 text-white/90 hover:text-white hover:scale-110 active:scale-95 ring-1 ring-white/10"
+                                                            whileHover={{
+                                                                scale: 1.1,
+                                                            }}
+                                                            whileTap={{
+                                                                scale: 0.95,
+                                                            }}
+                                                        >
+                                                            ▲
+                                                        </motion.button>
+                                                    </Tooltip>
+                                                    <Tooltip text="Scroll down">
+                                                        <motion.button
+                                                            variants={item}
+                                                            onClick={() => {
+                                                                const container =
+                                                                    document.querySelector(
+                                                                        "#history-container"
+                                                                    );
+                                                                if (container) {
+                                                                    container.scrollBy(
+                                                                        {
+                                                                            top: 41,
+                                                                            behavior:
+                                                                                "smooth",
+                                                                        }
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className="w-8 h-6 flex items-center justify-center bg-black/20 hover:bg-black/40 rounded-lg transition-all duration-150 text-white/90 hover:text-white hover:scale-110 active:scale-95 ring-1 ring-white/10 cursor-pointer"
+                                                            whileHover={{
+                                                                scale: 1.1,
+                                                            }}
+                                                            whileTap={{
+                                                                scale: 0.95,
+                                                            }}
+                                                        >
+                                                            ▼
+                                                        </motion.button>
+                                                    </Tooltip>
+                                                </div>
+                                            </motion.div>
+                                            <motion.div
+                                                variants={item}
+                                                className="h-40 bg-black/20 backdrop-blur rounded-xl shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] ring-1 ring-white/10"
+                                            >
+                                                <div
+                                                    id="history-container"
+                                                    className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none] p-2"
+                                                >
+                                                    <motion.div
+                                                        variants={container}
+                                                        className="space-y-1"
+                                                    >
+                                                        {history.map(
+                                                            (path, index) => (
+                                                                <motion.a
+                                                                    key={index}
+                                                                    variants={
+                                                                        item
+                                                                    }
+                                                                    onClick={(
+                                                                        e
+                                                                    ) => {
+                                                                        e.preventDefault();
+                                                                        router.push(
+                                                                            path
+                                                                        );
+                                                                    }}
+                                                                    className="block px-3 py-2 bg-black/20 hover:bg-black/40 rounded-lg font-mono text-sm transition-all duration-150 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ring-1 ring-white/10"
+                                                                    whileHover={{
+                                                                        scale: 1.02,
+                                                                    }}
+                                                                    whileTap={{
+                                                                        scale: 0.98,
+                                                                    }}
+                                                                >
+                                                                    <div className="truncate">
+                                                                        {path}
+                                                                    </div>
+                                                                </motion.a>
+                                                            )
+                                                        )}
+                                                    </motion.div>
+                                                </div>
+                                            </motion.div>
+                                        </motion.div>
+                                    )}
+
+                                    <motion.div
+                                        variants={item}
+                                        className="fixed bottom-4 right-6 w-[calc(20rem-3rem)] bg-white/50 backdrop-blur-md rounded-xl p-2 ring-1 ring-white/10"
+                                    >
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <MotionToolButton
+                                                icon={
+                                                    <SocialIcon
+                                                        type="github"
+                                                        className="w-5 h-5"
+                                                    />
+                                                }
+                                                text="GitHub"
+                                                tooltip="Visit my GitHub profile"
+                                                onClick={() =>
+                                                    window.open(
+                                                        "https://github.com/itsmarsss",
+                                                        "_blank"
+                                                    )
+                                                }
                                             />
-                                        }
-                                        text="GitHub"
-                                        tooltip="Visit my GitHub profile"
-                                        onClick={() =>
-                                            window.open(
-                                                "https://github.com/itsmarsss",
-                                                "_blank"
-                                            )
-                                        }
-                                    />
-                                    <ToolButton
-                                        icon={
-                                            <SocialIcon
-                                                type="x"
-                                                className="w-5 h-5"
+                                            <MotionToolButton
+                                                icon={
+                                                    <SocialIcon
+                                                        type="x"
+                                                        className="w-5 h-5"
+                                                    />
+                                                }
+                                                text="Twi- X"
+                                                tooltip="Visit my X profile"
+                                                onClick={() =>
+                                                    window.open(
+                                                        "https://x.com/__kennywu__",
+                                                        "_blank"
+                                                    )
+                                                }
                                             />
-                                        }
-                                        text="Twi- X"
-                                        tooltip="Visit my X profile"
-                                        onClick={() =>
-                                            window.open(
-                                                "https://x.com/__kennywu__",
-                                                "_blank"
-                                            )
-                                        }
-                                    />
+                                        </div>
+                                    </motion.div>
                                 </div>
-                                <div className="text-xs opacity-50 text-center">
-                                    Hover to expand/collapse
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="rotate-90 whitespace-nowrap text-sm opacity-70">
-                            Hover here for tools
-                        </div>
-                    </div>
-                )}
-            </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="collapsed"
+                                className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-white/[0.08] via-transparent to-transparent"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                            >
+                                <motion.div
+                                    className="rotate-90 whitespace-nowrap text-sm text-white/90 tracking-wider font-medium"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 25,
+                                    }}
+                                >
+                                    Hover for tools
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            </motion.div>
         </div>
     );
 }
