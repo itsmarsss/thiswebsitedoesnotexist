@@ -2,6 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Analytics } from "@vercel/analytics/next";
 
 const loadingMessages = [
     "Searching through the multiverse...",
@@ -133,6 +134,7 @@ export default function SlugPage() {
                         </button>
                     </div>
                 </div>
+                <Analytics />
             </div>
         );
     }
@@ -205,6 +207,7 @@ export default function SlugPage() {
                 title="Generated Content"
                 sandbox="allow-scripts allow-same-origin"
             />
+            <Analytics />
         </div>
     );
 }
