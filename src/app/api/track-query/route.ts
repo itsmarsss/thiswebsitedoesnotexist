@@ -1,52 +1,69 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import type { QueryCount } from "@/types/query";
 
-export async function POST(request: Request) {
-    try {
-        const { endpoint } = await request.json();
+const ITEMS_PER_PAGE = 20;
 
-        if (!endpoint) {
-            return NextResponse.json(
-                { error: "Endpoint is required" },
-                { status: 400 }
-            );
-        }
+export async function GET(request: NextRequest) {
+    try {
+        const searchParams = request.nextUrl.searchParams;
+        const page = parseInt(searchParams.get("page") || "1");
+        const search = searchParams.get("search") || "";
+        const skip = (page - 1) * ITEMS_PER_PAGE;
 
         const client = await clientPromise;
         const db = client.db("searchStats");
         const collection = db.collection<QueryCount>("queries");
 
-        // Update or insert the query count
-        const result = await collection.updateOne(
-            { endpoint },
-            {
-                $inc: { count: 1 },
-                $set: { lastQueried: new Date() },
-            },
-            { upsert: true }
+        // Build search query
+        const searchQuery = search
+            ? { endpoint: { $regex: search, $options: "i" } }
+            : {};
+
+        // Get total count for the search query
+        const totalCount = await collection.countDocuments(searchQuery);
+
+        // Get paginated and sorted results
+        // Add a secondary sort by endpoint to ensure consistent ordering
+        const queries = await collection
+            .aggregate([
+                { $match: searchQuery },
+                {
+                    $sort: {
+                        count: -1,
+                        endpoint: 1, // Secondary sort to ensure consistent ordering
+                    },
+                },
+                { $skip: skip },
+                { $limit: ITEMS_PER_PAGE },
+                // Add a stage to ensure we're getting unique endpoints
+                {
+                    $group: {
+                        _id: "$endpoint",
+                        endpoint: { $first: "$endpoint" },
+                        count: { $first: "$count" },
+                        lastQueried: { $first: "$lastQueried" },
+                    },
+                },
+                {
+                    $sort: {
+                        count: -1,
+                        endpoint: 1,
+                    },
+                },
+            ])
+            .toArray();
+
+        // Log for debugging
+        console.log(
+            `Fetched ${queries.length} unique queries for page ${page}`
         );
 
-        return NextResponse.json({ success: true, result });
-    } catch (error) {
-        console.error("Error tracking query:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
-    }
-}
-
-export async function GET() {
-    try {
-        const client = await clientPromise;
-        const db = client.db("searchStats");
-        const collection = db.collection<QueryCount>("queries");
-
-        // Get all queries sorted by count in descending order
-        const queries = await collection.find({}).sort({ count: -1 }).toArray();
-
-        return NextResponse.json(queries);
+        return NextResponse.json({
+            queries,
+            totalCount,
+            hasMore: totalCount > skip + queries.length,
+        });
     } catch (error) {
         console.error("Error fetching queries:", error);
         return NextResponse.json(

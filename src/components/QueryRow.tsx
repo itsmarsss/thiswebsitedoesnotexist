@@ -58,14 +58,13 @@ export default function QueryRow({ query, index }: QueryRowProps) {
                             {query.endpoint}
                         </p>
                         <p className="text-sm text-white/60">
-                            Last queried:{" "}
                             {formatDateTime(new Date(query.lastQueried))}
                         </p>
                     </div>
                 </div>
                 <div className="flex items-center">
                     <span className="px-3 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full ring-1 ring-green-500/30 group-hover:bg-green-500/30 group-hover:text-green-300 transition-colors">
-                        {query.count} searches
+                        {query.count} search{query.count === 1 ? "" : "es"}
                     </span>
                 </div>
             </div>

@@ -1,9 +1,11 @@
 "use client";
 
 import { QueryCount } from "@/types/query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import QueryRow from "@/components/QueryRow";
+import { useInView } from "react-intersection-observer";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const container: Variants = {
     hidden: {
@@ -36,26 +38,67 @@ const item: Variants = {
     },
 };
 
+interface QueryResponse {
+    queries: QueryCount[];
+    totalCount: number;
+    hasMore: boolean;
+}
+
 export default function SearchBoard() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const initialSearch = searchParams.get("q") || "";
+
     const [queries, setQueries] = useState<QueryCount[]>([]);
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const searchTimeout = useRef<NodeJS.Timeout>(null);
 
-    useEffect(() => {
-        async function fetchQueries() {
+    // Infinite scroll observer
+    const { ref: loadMoreRef, inView } = useInView({
+        threshold: 0,
+    });
+
+    const fetchQueries = useCallback(
+        async (pageNum: number, search: string, isNewSearch = false) => {
             try {
-                console.log("Fetching queries...");
-                const response = await fetch("/api/track-query", {
-                    next: { revalidate: 60 }, // Revalidate every minute
-                });
+                setIsFetchingMore(true);
+                const response = await fetch(
+                    `/api/track-query?page=${pageNum}&search=${encodeURIComponent(
+                        search
+                    )}`
+                );
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch query stats");
                 }
 
-                const data = await response.json();
-                console.log("Received data:", data);
-                setQueries(data);
+                const data: QueryResponse = await response.json();
+
+                // If it's a new search, replace the queries, otherwise append
+                setQueries((prev) => {
+                    if (isNewSearch) {
+                        return data.queries;
+                    }
+
+                    // Create a Set of existing endpoints to prevent duplicates
+                    const existingEndpoints = new Set(
+                        prev.map((q) => q.endpoint)
+                    );
+
+                    // Only add queries that don't already exist
+                    const newQueries = data.queries.filter(
+                        (q) => !existingEndpoints.has(q.endpoint)
+                    );
+
+                    return [...prev, ...newQueries];
+                });
+
+                setHasMore(data.hasMore);
             } catch (err) {
                 console.error("Error fetching queries:", err);
                 setError(
@@ -65,11 +108,69 @@ export default function SearchBoard() {
                 );
             } finally {
                 setIsLoading(false);
+                setIsFetchingMore(false);
             }
+        },
+        []
+    );
+
+    // Initial load
+    useEffect(() => {
+        fetchQueries(1, initialSearch, true);
+    }, [fetchQueries, initialSearch]);
+
+    // Handle search with debounce and URL update
+    useEffect(() => {
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
         }
 
-        fetchQueries();
-    }, []);
+        searchTimeout.current = setTimeout(() => {
+            // Update URL with search term
+            const params = new URLSearchParams(searchParams);
+            if (searchTerm) {
+                params.set("q", searchTerm);
+            } else {
+                params.delete("q");
+            }
+            router.replace(`/searchboard?${params.toString()}`);
+
+            setPage(1);
+            fetchQueries(1, searchTerm, true);
+        }, 300) as unknown as NodeJS.Timeout;
+
+        return () => {
+            if (searchTimeout.current) {
+                clearTimeout(searchTimeout.current);
+            }
+        };
+    }, [searchTerm, router, searchParams, fetchQueries]);
+
+    // Handle infinite scroll
+    useEffect(() => {
+        if (inView && hasMore && !isFetchingMore && !isLoading) {
+            setPage((prev) => prev + 1);
+            fetchQueries(page + 1, searchTerm);
+        }
+    }, [
+        inView,
+        hasMore,
+        isFetchingMore,
+        isLoading,
+        page,
+        searchTerm,
+        fetchQueries,
+    ]);
+
+    // Handle search input change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
+
+    // Handle search clear
+    const handleClearSearch = () => {
+        setSearchTerm("");
+    };
 
     return (
         <div className="fixed inset-0 min-h-screen bg-black/95">
@@ -182,12 +283,55 @@ export default function SearchBoard() {
 
                                     <div className="relative">
                                         <div className="px-6 py-5">
-                                            <h2 className="text-lg font-semibold text-white">
-                                                Most Popular Queries
-                                            </h2>
-                                            <p className="text-white/60 text-sm">
-                                                Ranked by number of searches
-                                            </p>
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                                <div>
+                                                    <h2 className="text-lg font-semibold text-white">
+                                                        Most Popular Queries
+                                                    </h2>
+                                                    <p className="text-white/60 text-sm">
+                                                        Ranked by number of
+                                                        searches
+                                                    </p>
+                                                </div>
+                                                <div className="relative">
+                                                    <div className="relative">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search endpoints..."
+                                                            value={searchTerm}
+                                                            onChange={
+                                                                handleSearchChange
+                                                            }
+                                                            className="w-full sm:w-64 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent pr-8"
+                                                        />
+                                                        {searchTerm && (
+                                                            <button
+                                                                onClick={
+                                                                    handleClearSearch
+                                                                }
+                                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                                                            >
+                                                                <svg
+                                                                    className="w-4 h-4"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
+                                                                        d="M6 18L18 6M6 6l12 12"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-white/[0.03] to-transparent pointer-events-none rounded-lg" />
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="border-t border-white/10">
@@ -195,25 +339,60 @@ export default function SearchBoard() {
                                                 variants={container}
                                                 className="divide-y divide-white/10"
                                             >
-                                                {queries.map((query, index) => (
-                                                    <motion.div
-                                                        key={query.endpoint}
-                                                        variants={item}
-                                                    >
-                                                        <QueryRow
-                                                            query={query}
-                                                            index={index}
-                                                        />
-                                                    </motion.div>
-                                                ))}
-                                                {(!queries ||
-                                                    queries.length === 0) && (
+                                                <AnimatePresence mode="popLayout">
+                                                    {queries.map(
+                                                        (query, index) => (
+                                                            <motion.div
+                                                                key={
+                                                                    query.endpoint
+                                                                }
+                                                                variants={item}
+                                                                layout
+                                                                initial={{
+                                                                    opacity: 0,
+                                                                    y: 20,
+                                                                }}
+                                                                animate={{
+                                                                    opacity: 1,
+                                                                    y: 0,
+                                                                }}
+                                                                exit={{
+                                                                    opacity: 0,
+                                                                    y: -20,
+                                                                }}
+                                                            >
+                                                                <QueryRow
+                                                                    query={
+                                                                        query
+                                                                    }
+                                                                    index={
+                                                                        index
+                                                                    }
+                                                                />
+                                                            </motion.div>
+                                                        )
+                                                    )}
+                                                </AnimatePresence>
+                                                {queries.length === 0 ? (
                                                     <motion.div
                                                         variants={item}
                                                         className="px-6 py-8 text-center text-white/60"
                                                     >
-                                                        No queries recorded yet
+                                                        {searchTerm
+                                                            ? "No matching queries found"
+                                                            : "No queries recorded yet"}
                                                     </motion.div>
+                                                ) : (
+                                                    <div
+                                                        ref={loadMoreRef}
+                                                        className="p-4 flex justify-center"
+                                                    >
+                                                        {isFetchingMore && (
+                                                            <div className="text-white/60">
+                                                                Loading more...
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </motion.div>
                                         </div>
