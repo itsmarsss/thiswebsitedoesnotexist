@@ -324,6 +324,19 @@ export default function HoverToolbar() {
                                                                 router.push("/")
                                                             }
                                                         />
+
+                                                        <MotionToolButton
+                                                            icon={
+                                                                <Icon type="analytics" />
+                                                            }
+                                                            text="Analytics"
+                                                            tooltip="View search analytics"
+                                                            onClick={() =>
+                                                                router.push(
+                                                                    "/searchboard"
+                                                                )
+                                                            }
+                                                        />
                                                     </motion.div>
                                                 </motion.div>
                                             </div>

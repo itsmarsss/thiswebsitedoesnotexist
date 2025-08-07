@@ -28,7 +28,7 @@ export default function MotionToolButton({
             <motion.button
                 onClick={onClick}
                 disabled={disabled || isLoading}
-                className={`w-full px-4 py-2 bg-black/20 hover:bg-black/40 rounded-lg text-left flex items-center justify-between cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+                className={`group w-full px-4 py-2 bg-black/20 hover:bg-black/40 rounded-lg text-left flex items-center justify-between cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
                 variants={{
                     hidden: { opacity: 0, y: 10 },
                     show: { opacity: 1, y: 0 },
@@ -38,7 +38,11 @@ export default function MotionToolButton({
             >
                 <span className="flex items-center gap-2 min-w-0">
                     <span className="w-5 flex-none flex items-center justify-center">
-                        {icon}
+                        <div className="group-hover:bg-gradient-to-br group-hover:from-blue-500/20 group-hover:to-green-500/20 rounded-lg p-1 transition-colors">
+                            <div className="group-hover:text-blue-400 transition-colors">
+                                {icon}
+                            </div>
+                        </div>
                     </span>
                     <span className="truncate">{text}</span>
                 </span>
