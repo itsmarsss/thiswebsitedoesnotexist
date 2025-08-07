@@ -503,7 +503,7 @@ export default function HoverToolbar() {
                                                         tooltip="Visit my GitHub profile"
                                                         onClick={() =>
                                                             window.open(
-                                                                "https://github.com/itsmarsss",
+                                                                "https://github.com/itsmarsss/thiswebsitedoesnotexist",
                                                                 "_blank"
                                                             )
                                                         }
@@ -515,7 +515,7 @@ export default function HoverToolbar() {
                                                                 className="w-5 h-5"
                                                             />
                                                         }
-                                                        text="Twi- X"
+                                                        text="X"
                                                         tooltip="Visit my X profile"
                                                         onClick={() =>
                                                             window.open(

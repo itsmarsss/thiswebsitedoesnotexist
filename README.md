@@ -6,6 +6,7 @@ A dynamic website generator that creates unique, interactive HTML pages on-deman
 
 -   **Dynamic Content Generation**: Every URL path generates a unique webpage using AI
 -   **Client-Side Only**: All generated pages are pure HTML/CSS/JS with no backend dependencies
+-   **Analytics Dashboard**: Track and analyze popular page requests
 -   **Modern UI**:
     -   Sleek glass-effect toolbar
     -   Smooth animations and transitions
@@ -28,6 +29,7 @@ A dynamic website generator that creates unique, interactive HTML pages on-deman
 -   **Styling**: Tailwind CSS
 -   **Animations**: Framer Motion
 -   **AI**: Gemini 2.5 Flash Lite
+-   **Database**: MongoDB (for analytics)
 
 ## Getting Started
 
@@ -44,11 +46,22 @@ cd thiswebsitedoesnotexist
 npm install
 ```
 
-3. Create a `.env.local` file with your API key:
+3. Create a `.env.local` file with your API keys:
 
-```
+```env
+# Required for AI generation
 GEMINI_API_KEY=your_api_key_here
+
+# Required for analytics (MongoDB)
+MONGO_URI=your_mongodb_uri_here
 ```
+
+For MongoDB setup:
+
+-   Create a free cluster at [MongoDB Atlas](https://www.mongodb.com/atlas/database)
+-   Get your connection string from the cluster
+-   Replace `your_mongodb_uri_here` with your connection string
+-   The database and collections will be created automatically
 
 4. Run the development server:
 
@@ -58,6 +71,16 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+## Analytics Dashboard
+
+Visit `/searchboard` to view analytics about the most popular generated pages. The dashboard shows:
+
+-   Most requested paths
+-   Number of times each path was requested
+-   Last request timestamp for each path
+
+Analytics are automatically collected whenever a page is generated.
+
 ## How It Works
 
 1. When a user visits any path (e.g., `/cool/page`), the app captures the full path
@@ -65,6 +88,7 @@ npm run dev
 3. Gemini generates contextually relevant HTML based on the path
 4. The HTML is rendered directly in the browser with no backend processing
 5. A persistent toolbar provides navigation and utility functions
+6. Each page request is tracked in MongoDB for analytics
 
 ## Customization
 
@@ -84,7 +108,7 @@ The project is ready for deployment on platforms like Vercel:
 npm run build
 ```
 
-Just ensure your environment variables are properly set in your deployment platform.
+Just ensure your environment variables (GEMINI_API_KEY and MONGO_URI) are properly set in your deployment platform.
 
 ## Cost Estimation
 
@@ -93,6 +117,12 @@ Using Gemini 2.5 Flash Lite:
 -   ~50K characters per generation
 -   $0.000125 per 1K characters
 -   Approximately $0.00625 per page generation
+
+MongoDB Atlas free tier is sufficient for most use cases and includes:
+
+-   512MB storage
+-   Shared RAM
+-   Up to 100 operations per second
 
 ## Contributing
 
