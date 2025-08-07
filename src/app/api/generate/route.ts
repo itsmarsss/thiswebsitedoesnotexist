@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { generatePagePrompt } from "@/lib/prompts";
+import clientPromise from "@/lib/mongodb";
+import type { QueryCount } from "@/types/query";
 
 // Initialize the Google AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+async function trackQuery(endpoint: string) {
+    try {
+        const client = await clientPromise;
+        const db = client.db("searchStats");
+        const collection = db.collection<QueryCount>("queries");
+
+        // Update or insert the query count
+        await collection.updateOne(
+            { endpoint },
+            {
+                $inc: { count: 1 },
+                $set: { lastQueried: new Date() },
+            },
+            { upsert: true }
+        );
+    } catch (error) {
+        // Log error but don't fail the request
+        console.error("Error tracking query:", error);
+    }
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -52,6 +75,9 @@ export async function POST(request: NextRequest) {
 
         const response = await result.response;
         const generatedHTML = response.text();
+
+        // Track the query after successful generation
+        await trackQuery(fullPath);
 
         console.log("Generated HTML for path:", fullPath);
         console.log(prompt);
