@@ -231,7 +231,7 @@ export default function HoverToolbar() {
                                         exit="hidden"
                                         variants={container}
                                     >
-                                        <div className="p-6 pb-24 min-h-full flex flex-col gap-3 relative">
+                                        <div className="p-6 min-h-full flex flex-col gap-3 relative">
                                             <div className="flex-none">
                                                 <motion.h2
                                                     variants={item}
@@ -502,7 +502,7 @@ export default function HoverToolbar() {
 
                                             <motion.div
                                                 variants={item}
-                                                className="fixed bottom-4 right-6 w-[calc(20rem-3rem)] bg-white/50 backdrop-blur-md rounded-xl p-2 ring-1 ring-white/10"
+                                                className="sticky bottom-4 w-full bg-white/50 backdrop-blur-md rounded-xl p-2 ring-1 ring-white/10"
                                             >
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <MotionToolButton
