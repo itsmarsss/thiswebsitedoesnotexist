@@ -53,7 +53,7 @@ npm install
 GEMINI_API_KEY=your_api_key_here
 
 # Required for analytics (MongoDB)
-MONGO_URI=your_mongodb_uri_here
+MONGODB_URI=your_mongodb_uri_here
 ```
 
 For MongoDB setup:
@@ -80,6 +80,23 @@ Visit `/searchboard` to view analytics about the most popular generated pages. T
 -   Last request timestamp for each path
 
 Analytics are automatically collected whenever a page is generated.
+
+### Manual Data Import
+
+To manually import analytics data:
+
+1. Prepare your data in the `scripts/import-stats.ts` file following the existing format
+2. Compile and run the import script:
+
+```bash
+# Compile the TypeScript file
+npx tsc scripts/import-stats.ts --esModuleInterop true --module commonjs
+
+# Run the compiled script
+node scripts/import-stats.js
+```
+
+This will upsert the data into your MongoDB database, updating existing entries and adding new ones.
 
 ## How It Works
 
@@ -108,7 +125,7 @@ The project is ready for deployment on platforms like Vercel:
 npm run build
 ```
 
-Just ensure your environment variables (GEMINI_API_KEY and MONGO_URI) are properly set in your deployment platform.
+Just ensure your environment variables (GEMINI_API_KEY and MONGODB_URI) are properly set in your deployment platform.
 
 ## Cost Estimation
 

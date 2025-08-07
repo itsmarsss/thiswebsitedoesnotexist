@@ -49,19 +49,19 @@ function importData() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!process.env.MONGO_URI) {
-                        console.error("Error: MONGO_URI not found in .env");
-                        console.error("Please ensure your .env file contains a valid MONGO_URI");
+                    if (!process.env.MONGODB_URI) {
+                        console.error("Error: MONGODB_URI not found in .env");
+                        console.error("Please ensure your .env file contains a valid MONGODB_URI");
                         process.exit(1);
                     }
-                    if (!validateMongoURI(process.env.MONGO_URI)) {
-                        console.error("Error: Invalid MONGO_URI format");
+                    if (!validateMongoURI(process.env.MONGODB_URI)) {
+                        console.error("Error: Invalid MONGODB_URI format");
                         console.error("Expected format: mongodb+srv://<username>:<password>@<cluster>/<database>");
                         console.error("Or: mongodb://<host>:<port>/<database>");
                         process.exit(1);
                     }
                     console.log("Connecting to MongoDB...");
-                    client = new mongodb_1.MongoClient(process.env.MONGO_URI, {
+                    client = new mongodb_1.MongoClient(process.env.MONGODB_URI, {
                         connectTimeoutMS: 10000, // 10 seconds
                         socketTimeoutMS: 45000, // 45 seconds
                     });
