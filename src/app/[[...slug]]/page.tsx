@@ -79,6 +79,37 @@ export default function SlugPage() {
                     iframeDoc.open();
                     iframeDoc.write(data.html);
                     iframeDoc.close();
+
+                    // Intercept link clicks to handle navigation in parent window
+                    const handleLinkClick = (e: Event) => {
+                        const target = e.target as HTMLElement;
+                        const link = target.closest("a");
+                        if (link && link.href) {
+                            e.preventDefault();
+
+                            // Check if it's an external link
+                            try {
+                                const url = new URL(link.href);
+                                const currentOrigin = window.location.origin;
+
+                                if (url.origin !== currentOrigin) {
+                                    // External link - open in new tab
+                                    window.open(link.href, "_blank");
+                                } else {
+                                    // Internal link - navigate in parent window
+                                    const path =
+                                        url.pathname + url.search + url.hash;
+                                    window.location.href = path;
+                                }
+                            } catch (err) {
+                                // Relative link - navigate in parent window
+                                window.location.href = link.href;
+                            }
+                        }
+                    };
+
+                    // Add click event listener to the iframe document
+                    iframeDoc.addEventListener("click", handleLinkClick);
                 }
             } catch (err) {
                 console.error("Error:", err);
