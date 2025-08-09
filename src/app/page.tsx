@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Analytics } from "@vercel/analytics/next";
@@ -12,6 +12,9 @@ import { features } from "@/lib/features";
 export default function HomePage() {
     const [searchInput, setSearchInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [totalSiteGenerations, setTotalSiteGenerations] = useState(0);
+    const [estimatedCost, setEstimatedCost] = useState("0.00");
+    const [userGeneratedCount, setUserGeneratedCount] = useState(0);
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,6 +39,31 @@ export default function HomePage() {
             handleSearch();
         }
     };
+
+    // Load stats on component mount
+    useEffect(() => {
+        // Load user generation count from localStorage
+        const savedCount = localStorage.getItem("userGeneratedPages");
+        if (savedCount) {
+            setUserGeneratedCount(parseInt(savedCount, 10) || 0);
+        }
+
+        // Fetch global stats from API
+        const fetchStats = async () => {
+            try {
+                const response = await fetch("/api/track-query?page=1");
+                if (response.ok) {
+                    const data = await response.json();
+                    setTotalSiteGenerations(data.totalSiteGenerations || 0);
+                    setEstimatedCost(data.estimatedCost || "0.00");
+                }
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            }
+        };
+
+        fetchStats();
+    }, []);
 
     return (
         <div className="min-h-screen py-32 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white overflow-hidden relative">
@@ -281,6 +309,148 @@ export default function HomePage() {
                         ))}
                     </motion.div>
                 </div>
+
+                {/* Stats Section */}
+                <motion.div
+                    className="w-full max-w-6xl px-4 sm:px-6 my-12"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 2.2 }}
+                >
+                    <motion.h2
+                        className="text-2xl sm:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 2.3 }}
+                    >
+                        The Digital Wasteland Stats
+                    </motion.h2>
+                    <div className="w-full max-w-6xl align-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 px-4">
+                        {/* Total Pages Generated */}
+                        <motion.div
+                            className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-2xl p-6 ring-1 ring-green-500/30 relative overflow-hidden"
+                            initial={{ opacity: 0, y: 30, rotate: -2 }}
+                            animate={{ opacity: 1, y: 0, rotate: 0 }}
+                            transition={{ duration: 0.6, delay: 2.4 }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                            <div className="relative">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-green-500/30 flex items-center justify-center">
+                                        <svg
+                                            className="w-6 h-6 text-green-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-green-400">
+                                            Total Page Requests
+                                        </h3>
+                                        <p className="text-green-300/70 text-sm">
+                                            Generational ai SLOP
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-3xl font-bold text-green-400 font-mono">
+                                    {totalSiteGenerations.toLocaleString()}
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* User Generated Pages */}
+                        <motion.div
+                            className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl rounded-2xl p-6 ring-1 ring-blue-500/30 relative overflow-hidden"
+                            initial={{ opacity: 0, y: 30, rotate: 1 }}
+                            animate={{ opacity: 1, y: 0, rotate: 0 }}
+                            transition={{ duration: 0.6, delay: 2.5 }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                            <div className="relative">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-blue-500/30 flex items-center justify-center">
+                                        <svg
+                                            className="w-6 h-6 text-blue-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-blue-400">
+                                            You Requested
+                                        </h3>
+                                        <p className="text-blue-300/70 text-sm">
+                                            Your{" "}
+                                            <span className="line-through">
+                                                body
+                                            </span>{" "}
+                                            page count
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-3xl font-bold text-blue-400 font-mono">
+                                    {userGeneratedCount.toLocaleString()}
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Estimated Cost */}
+                        <motion.div
+                            className="bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-xl rounded-2xl p-6 ring-1 ring-red-500/30 relative overflow-hidden sm:col-span-2 lg:col-span-1"
+                            initial={{ opacity: 0, y: 30, rotate: -1 }}
+                            animate={{ opacity: 1, y: 0, rotate: 0 }}
+                            transition={{ duration: 0.6, delay: 2.6 }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                            <div className="relative">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-red-500/30 flex items-center justify-center">
+                                        <svg
+                                            className="w-6 h-6 text-red-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 6c-2.4855 0-4.5 1.3425-4.5 3s2.0145 3 4.5 3 4.5 1.3425 4.5 3-2.0145 3-4.5 3m0-12c1.665 0 3.12 0.603 3.8985 1.5M12 6V4.5m0 1.5v12m0 0v1.5m0-1.5c-1.665 0-3.12-0.603-3.8985-1.5"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-red-400">
+                                            Estimated Cost
+                                        </h3>
+                                        <p className="text-red-300/70 text-sm">
+                                            Wallet is shallow...
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-3xl font-bold text-red-400 font-mono">
+                                    ${estimatedCost}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </motion.div>
 
                 {/* Footer */}
                 <motion.footer
