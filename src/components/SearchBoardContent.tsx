@@ -42,6 +42,8 @@ interface QueryResponse {
     queries: QueryCount[];
     totalCount: number;
     hasMore: boolean;
+    totalSiteGenerations: number;
+    estimatedCost: string;
 }
 
 export default function SearchBoardContent() {
@@ -56,6 +58,9 @@ export default function SearchBoardContent() {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const [totalSiteGenerations, setTotalSiteGenerations] = useState(0);
+    const [estimatedCost, setEstimatedCost] = useState("0.00");
+    const [userGeneratedCount, setUserGeneratedCount] = useState(0);
     const searchTimeout = useRef<NodeJS.Timeout>(null);
 
     // Infinite scroll observer
@@ -99,6 +104,12 @@ export default function SearchBoardContent() {
                 });
 
                 setHasMore(data.hasMore);
+
+                // Update total site generations and cost (only for new searches to avoid duplicating)
+                if (isNewSearch) {
+                    setTotalSiteGenerations(data.totalSiteGenerations);
+                    setEstimatedCost(data.estimatedCost);
+                }
             } catch (err) {
                 console.error("Error fetching queries:", err);
                 setError(
@@ -113,6 +124,14 @@ export default function SearchBoardContent() {
         },
         []
     );
+
+    // Load user generation count from localStorage
+    useEffect(() => {
+        const savedCount = localStorage.getItem("userGeneratedPages");
+        if (savedCount) {
+            setUserGeneratedCount(parseInt(savedCount, 10) || 0);
+        }
+    }, []);
 
     // Initial load
     useEffect(() => {
@@ -271,6 +290,121 @@ export default function SearchBoardContent() {
                                             Track and analyze popular page
                                             requests
                                         </p>
+                                    </div>
+                                </motion.div>
+
+                                {/* Stats Summary */}
+                                <motion.div
+                                    variants={item}
+                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+                                >
+                                    {/* Total Pages Generated */}
+                                    <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-2xl p-6 ring-1 ring-green-500/30 relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                                        <div className="relative">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-12 h-12 rounded-xl bg-green-500/30 flex items-center justify-center">
+                                                    <svg
+                                                        className="w-6 h-6 text-green-400"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-green-400">
+                                                        Total Page Requests
+                                                    </h3>
+                                                    <p className="text-green-300/70 text-sm">
+                                                        Generational ai SLOP
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-3xl font-bold text-green-400 font-mono">
+                                                {totalSiteGenerations.toLocaleString()}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* User Generated Pages */}
+                                    <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl rounded-2xl p-6 ring-1 ring-blue-500/30 relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                                        <div className="relative">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-12 h-12 rounded-xl bg-blue-500/30 flex items-center justify-center">
+                                                    <svg
+                                                        className="w-6 h-6 text-blue-400"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-blue-400">
+                                                        You Requested
+                                                    </h3>
+                                                    <p className="text-blue-300/70 text-sm">
+                                                        Your{" "}
+                                                        <span className="line-through">
+                                                            body
+                                                        </span>{" "}
+                                                        page count
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-3xl font-bold text-blue-400 font-mono">
+                                                {userGeneratedCount.toLocaleString()}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Estimated Cost */}
+                                    <div className="bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-xl rounded-2xl p-6 ring-1 ring-red-500/30 relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                                        <div className="relative">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-12 h-12 rounded-xl bg-red-500/30 flex items-center justify-center">
+                                                    <svg
+                                                        className="w-6 h-6 text-red-400"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M12 6c-2.4855 0-4.5 1.3425-4.5 3s2.0145 3 4.5 3 4.5 1.3425 4.5 3-2.0145 3-4.5 3m0-12c1.665 0 3.12 0.603 3.8985 1.5M12 6V4.5m0 1.5v12m0 0v1.5m0-1.5c-1.665 0-3.12-0.603-3.8985-1.5"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-red-400">
+                                                        Estimated Cost
+                                                    </h3>
+                                                    <p className="text-red-300/70 text-sm">
+                                                        Wallet is shallow...
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-3xl font-bold text-red-400 font-mono">
+                                                ${estimatedCost}
+                                            </div>
+                                        </div>
                                     </div>
                                 </motion.div>
 

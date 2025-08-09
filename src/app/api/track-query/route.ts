@@ -66,11 +66,32 @@ export async function GET(request: NextRequest) {
 
         const totalSiteGenerations = totalGenerations[0]?.total || 0;
 
+        // Calculate cost estimate
+        const calculateCost = (generations: number): string => {
+            const aiUsageCost = generations * 0.00625;
+            const infrastructureCost = generations * 0.0002;
+            const dataProcessingCost = generations * 0.0002;
+            const networkCost = generations * 0.0002;
+            const databaseCost = generations * 0.0002;
+
+            const totalCost =
+                aiUsageCost +
+                infrastructureCost +
+                dataProcessingCost +
+                networkCost +
+                databaseCost;
+
+            return totalCost.toFixed(2);
+        };
+
+        const estimatedCost = calculateCost(totalSiteGenerations);
+
         return NextResponse.json({
             queries,
             totalCount,
             hasMore: totalCount > skip + queries.length,
             totalSiteGenerations,
+            estimatedCost,
         });
     } catch (error) {
         console.error("Error fetching queries:", error);

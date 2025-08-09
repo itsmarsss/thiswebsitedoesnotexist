@@ -122,6 +122,14 @@ export default function SlugPage() {
                     iframeDoc.addEventListener("click", handleLinkClick);
                 }
 
+                // Increment user's personal generation count in localStorage
+                const currentUserCount =
+                    localStorage.getItem("userGeneratedPages");
+                const newUserCount = (
+                    parseInt(currentUserCount || "0", 10) + 1
+                ).toString();
+                localStorage.setItem("userGeneratedPages", newUserCount);
+
                 // Show generation stats if available and not on searchboard
                 if (!excludePaths.includes(pathname) && data.stats) {
                     setLocalGenerationStats(data.stats);
