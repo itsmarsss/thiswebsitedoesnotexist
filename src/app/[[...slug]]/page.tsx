@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { useGenerationStats } from "@/contexts/GenerationStatsContext";
 import GenerationStatsPopup from "@/components/GenerationStatsPopup";
 
 const loadingMessages = [
@@ -20,6 +21,7 @@ const loadingMessages = [
 ];
 
 export default function SlugPage() {
+    const { setGenerationStats } = useGenerationStats();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export default function SlugPage() {
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
     const [progress, setProgress] = useState(0);
     const [showStatsPopup, setShowStatsPopup] = useState(false);
-    const [generationStats, setGenerationStats] = useState<{
+    const [localGenerationStats, setLocalGenerationStats] = useState<{
         totalSiteGenerations: number;
         pathGenerations: number;
     } | null>(null);
@@ -118,26 +120,14 @@ export default function SlugPage() {
                     iframeDoc.addEventListener("click", handleLinkClick);
                 }
 
-                // Fetch generation stats after successful generation (but not on searchboard)
-                if (pathname !== "/searchboard") {
-                    try {
-                        const statsResponse = await fetch(
-                            `/api/generation-stats?endpoint=${encodeURIComponent(
-                                fullPath
-                            )}`
-                        );
-                        if (statsResponse.ok) {
-                            const stats = await statsResponse.json();
-                            setGenerationStats(stats);
-                            setShowStatsPopup(true);
-                        }
-                    } catch (statsError) {
-                        console.error(
-                            "Error fetching generation stats:",
-                            statsError
-                        );
-                        // Don't fail the whole generation for stats errors
-                    }
+                // Show generation stats if available and not on searchboard
+                if (pathname !== "/searchboard" && data.stats) {
+                    setLocalGenerationStats(data.stats);
+                    setGenerationStats(data.stats); // Update context
+                    setShowStatsPopup(true);
+                } else if (pathname === "/searchboard") {
+                    // Clear stats when on searchboard
+                    setGenerationStats(null);
                 }
             } catch (err) {
                 console.error("Error:", err);
@@ -270,10 +260,10 @@ export default function SlugPage() {
             />
 
             {/* Generation Stats Popup */}
-            {generationStats && (
+            {localGenerationStats && (
                 <GenerationStatsPopup
-                    totalGenerations={generationStats.totalSiteGenerations}
-                    pathGenerations={generationStats.pathGenerations}
+                    totalGenerations={localGenerationStats.totalSiteGenerations}
+                    pathGenerations={localGenerationStats.pathGenerations}
                     show={showStatsPopup}
                     onHide={() => setShowStatsPopup(false)}
                 />

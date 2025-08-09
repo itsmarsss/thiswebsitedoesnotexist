@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { generateRandomPath } from "@/lib/randomPaths";
+import { useGenerationStats } from "@/contexts/GenerationStatsContext";
 import Tooltip from "./Tooltip";
 import MotionToolButton from "./MotionToolButton";
 import SocialIcon from "./SocialIcon";
@@ -41,6 +42,7 @@ const item: Variants = {
 };
 
 export default function HoverToolbar() {
+    const { generationStats } = useGenerationStats();
     const router = useRouter();
     const pathname = usePathname();
     const [isExpanded, setIsExpanded] = useState(true);
@@ -329,7 +331,7 @@ export default function HoverToolbar() {
                                                             icon={
                                                                 <Icon type="analytics" />
                                                             }
-                                                            text="Analytics"
+                                                            text="Searchboard"
                                                             tooltip="View search analytics"
                                                             onClick={() =>
                                                                 router.push(
@@ -362,6 +364,75 @@ export default function HoverToolbar() {
                                                     </motion.div>
                                                 </div>
                                             </motion.div>
+
+                                            {generationStats &&
+                                                pathname !== "/" &&
+                                                pathname !== "/searchboard" && (
+                                                    <motion.div
+                                                        variants={item}
+                                                        className="flex-none"
+                                                    >
+                                                        <div className="text-sm">
+                                                            <motion.div
+                                                                variants={item}
+                                                                className="font-medium mb-1 text-white/90"
+                                                            >
+                                                                Generation Stats
+                                                            </motion.div>
+                                                            <motion.div
+                                                                variants={item}
+                                                                className="bg-black/20 backdrop-blur rounded-xl p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] ring-1 ring-white/10 cursor-pointer hover:bg-black/30 transition-colors"
+                                                                onClick={() =>
+                                                                    window.open(
+                                                                        "/searchboard",
+                                                                        "_blank"
+                                                                    )
+                                                                }
+                                                                whileHover={{
+                                                                    scale: 1.02,
+                                                                }}
+                                                                whileTap={{
+                                                                    scale: 0.98,
+                                                                }}
+                                                            >
+                                                                <div className="space-y-2 text-xs">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-white/70">
+                                                                            Total
+                                                                            sites:
+                                                                        </span>
+                                                                        <span className="font-mono bg-white/10 px-2 py-0.5 rounded text-blue-300">
+                                                                            {
+                                                                                generationStats.totalSiteGenerations
+                                                                            }{" "}
+                                                                            time
+                                                                            {generationStats.totalSiteGenerations !==
+                                                                            1
+                                                                                ? "s"
+                                                                                : ""}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-white/70">
+                                                                            This
+                                                                            path:
+                                                                        </span>
+                                                                        <span className="font-mono bg-white/10 px-2 py-0.5 rounded text-purple-300">
+                                                                            {
+                                                                                generationStats.pathGenerations
+                                                                            }{" "}
+                                                                            time
+                                                                            {generationStats.pathGenerations !==
+                                                                            1
+                                                                                ? "s"
+                                                                                : ""}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </motion.div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
 
                                             {history.length > 0 && (
                                                 <motion.div
