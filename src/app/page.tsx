@@ -6,30 +6,8 @@ import { motion } from "framer-motion";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Icon from "@/components/Icon";
-import { generateRandomPath } from "@/lib/randomPaths";
-
-const features = [
-    {
-        icon: "sparkles",
-        title: "Made Fresh Every Time",
-        description:
-            "Every URL you type creates something completely new. No templates, no copies.. Just pure digital creativity.",
-    },
-    {
-        icon: "dice",
-        title: "Go Anywhere You Want",
-        description:
-            "Dream up any path and watch it come to life. From /secret-ninja-dojo to /grandmother's-spaceship. (it's all possible)",
-    },
-    {
-        icon: "analytics",
-        title: "See What Others Explore",
-        description:
-            "Discover the weird and wonderful paths people are creating. You might find your next favorite imaginary place.",
-    },
-];
-
-const examplePaths = Array.from({ length: 7 }, () => generateRandomPath());
+import { examplePaths } from "@/lib/randomPaths";
+import { features } from "@/lib/features";
 
 export default function HomePage() {
     const [searchInput, setSearchInput] = useState("");
@@ -149,14 +127,14 @@ export default function HomePage() {
                         </motion.h2>
                     </motion.div>
                     <motion.p
-                        className="text-lg sm:text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed px-4"
+                        className="text-lg sm:text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 1 }}
                     >
-                        Type any URL you can imagine and watch a whole website
-                        spring to life. Every path is a new adventure waiting to
-                        be discovered.
+                        Build sites that never should've existed. AI
+                        hallucinates digital slop pages cuz apparently the
+                        internet didn't have enough crap already.
                     </motion.p>
                 </motion.header>
 
@@ -186,19 +164,17 @@ export default function HomePage() {
                                 <motion.button
                                     onClick={() => handleSearch()}
                                     disabled={isLoading || !searchInput.trim()}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white rounded-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transform hover:shadow-xl transition-all duration-300 cursor-pointer text-sm sm:text-base"
-                                    whileHover={{ scale: 1.1, rotate: 2 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white rounded-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transform hover:shadow-xl hover:scale-110 hover:rotate-2 active:scale-95 transition-all duration-300 cursor-pointer text-sm sm:text-base"
                                 >
                                     {isLoading ? (
                                         <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin cursor-not-allowed" />
                                     ) : (
                                         <>
                                             <span className="hidden sm:inline">
-                                                🚀 Let's Go!
+                                                Generate
                                             </span>
                                             <span className="sm:hidden">
-                                                🚀 Go!
+                                                Go
                                             </span>
                                         </>
                                     )}
@@ -226,14 +202,14 @@ export default function HomePage() {
                         transition={{ duration: 0.8, delay: 1.4 }}
                     >
                         <h3 className="text-base sm:text-lg font-semibold text-white/80 text-center mb-4 px-4">
-                            Or pick one of these wild ideas:
+                            Or let our algorithm choose your digital goon room:
                         </h3>
                         <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4">
                             {examplePaths.map((path, index) => (
                                 <motion.button
                                     key={path}
                                     onClick={() => handleExampleClick(path)}
-                                    className="px-3 sm:px-5 py-2 sm:py-3 bg-white/90 text-gray-800 rounded-full text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-yellow-300 cursor-pointer"
+                                    className="px-3 sm:px-5 py-2 sm:py-3 bg-white/90 text-gray-800 rounded-full text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-110 hover:rotate-2 active:scale-95 transition-all duration-300 border-2 border-transparent hover:border-yellow-300 cursor-pointer"
                                     initial={{
                                         opacity: 0,
                                         y: 20,
@@ -244,13 +220,6 @@ export default function HomePage() {
                                         duration: 0.5,
                                         delay: 1.6 + index * 0.1,
                                     }}
-                                    whileHover={{
-                                        scale: 1.1,
-                                        boxShadow:
-                                            "0 10px 25px rgba(0,0,0,0.2)",
-                                    }}
-                                    whileTap={{ scale: 0.95 }}
-                                    // Make touch-friendly
                                     style={{
                                         minHeight: "44px",
                                         minWidth: "44px",
@@ -272,7 +241,7 @@ export default function HomePage() {
                         {features.map((feature, index) => (
                             <motion.div
                                 key={feature.title}
-                                className="flex items-center justify-center "
+                                className="flex items-center justify-center hover:scale-105 hover:-translate-y-2 transition-transform duration-300"
                                 initial={{
                                     opacity: 0,
                                     y: 30,
@@ -281,9 +250,8 @@ export default function HomePage() {
                                 animate={{ opacity: 1, y: 0, rotate: 0 }}
                                 transition={{
                                     duration: 0.6,
-                                    delay: 2 + index * 0.2,
+                                    delay: 1.6 + index * 0.2,
                                 }}
-                                whileHover={{ scale: 1.05, y: -10 }}
                             >
                                 <div className="relative bg-white/95 text-gray-800 p-4 sm:p-6 rounded-3xl shadow-2xl transform transition-all duration-300 border-4 border-dashed border-transparent hover:border-pink-300">
                                     {/* Decorative corner sticker */}
