@@ -59,10 +59,18 @@ export async function GET(request: NextRequest) {
             `Fetched ${queries.length} unique queries for page ${page}`
         );
 
+        // Calculate total site generations
+        const totalGenerations = await collection
+            .aggregate([{ $group: { _id: null, total: { $sum: "$count" } } }])
+            .toArray();
+
+        const totalSiteGenerations = totalGenerations[0]?.total || 0;
+
         return NextResponse.json({
             queries,
             totalCount,
             hasMore: totalCount > skip + queries.length,
+            totalSiteGenerations,
         });
     } catch (error) {
         console.error("Error fetching queries:", error);

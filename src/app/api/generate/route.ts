@@ -7,7 +7,10 @@ import type { QueryCount } from "@/types/query";
 // Initialize the Google AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-async function trackQuery(endpoint: string) {
+async function trackQuery(endpoint: string): Promise<{
+    totalSiteGenerations: number;
+    pathGenerations: number;
+} | null> {
     try {
         const client = await clientPromise;
         const db = client.db("searchStats");
@@ -22,9 +25,26 @@ async function trackQuery(endpoint: string) {
             },
             { upsert: true }
         );
+
+        // Get total site generations
+        const totalGenerations = await collection
+            .aggregate([{ $group: { _id: null, total: { $sum: "$count" } } }])
+            .toArray();
+
+        const totalSiteGenerations = totalGenerations[0]?.total || 0;
+
+        // Get current path generations (after increment)
+        const pathData = await collection.findOne({ endpoint });
+        const pathGenerations = pathData?.count || 1;
+
+        return {
+            totalSiteGenerations,
+            pathGenerations,
+        };
     } catch (error) {
         // Log error but don't fail the request
         console.error("Error tracking query:", error);
+        return null;
     }
 }
 
@@ -76,13 +96,16 @@ export async function POST(request: NextRequest) {
         const response = await result.response;
         const generatedHTML = response.text();
 
-        // Track the query after successful generation
-        await trackQuery(fullPath);
+        // Track the query after successful generation and get stats
+        const stats = await trackQuery(fullPath);
 
         console.log("Generated HTML for path:", fullPath);
         console.log(prompt);
 
-        return NextResponse.json({ html: generatedHTML });
+        return NextResponse.json({
+            html: generatedHTML,
+            stats: stats || undefined,
+        });
     } catch (error) {
         console.error("Error generating content:", error);
         return NextResponse.json(

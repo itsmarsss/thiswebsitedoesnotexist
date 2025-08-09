@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import GenerationStatsPopup from "@/components/GenerationStatsPopup";
 
 const loadingMessages = [
     "Searching through the multiverse...",
@@ -26,6 +27,11 @@ export default function SlugPage() {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [showStatsPopup, setShowStatsPopup] = useState(false);
+    const [generationStats, setGenerationStats] = useState<{
+        totalSiteGenerations: number;
+        pathGenerations: number;
+    } | null>(null);
 
     const fullPath =
         searchParams.size > 0
@@ -110,6 +116,28 @@ export default function SlugPage() {
 
                     // Add click event listener to the iframe document
                     iframeDoc.addEventListener("click", handleLinkClick);
+                }
+
+                // Fetch generation stats after successful generation (but not on searchboard)
+                if (pathname !== "/searchboard") {
+                    try {
+                        const statsResponse = await fetch(
+                            `/api/generation-stats?endpoint=${encodeURIComponent(
+                                fullPath
+                            )}`
+                        );
+                        if (statsResponse.ok) {
+                            const stats = await statsResponse.json();
+                            setGenerationStats(stats);
+                            setShowStatsPopup(true);
+                        }
+                    } catch (statsError) {
+                        console.error(
+                            "Error fetching generation stats:",
+                            statsError
+                        );
+                        // Don't fail the whole generation for stats errors
+                    }
                 }
             } catch (err) {
                 console.error("Error:", err);
@@ -240,6 +268,17 @@ export default function SlugPage() {
                 title="Generated Content"
                 sandbox="allow-scripts allow-same-origin"
             />
+
+            {/* Generation Stats Popup */}
+            {generationStats && (
+                <GenerationStatsPopup
+                    totalGenerations={generationStats.totalSiteGenerations}
+                    pathGenerations={generationStats.pathGenerations}
+                    show={showStatsPopup}
+                    onHide={() => setShowStatsPopup(false)}
+                />
+            )}
+
             <Analytics />
             <SpeedInsights />
         </div>
