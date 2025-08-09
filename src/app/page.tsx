@@ -132,9 +132,9 @@ export default function HomePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 1 }}
                     >
-                        Build sites that never should've existed. AI
+                        Build sites that never should&apos;ve existed. AI
                         hallucinates digital slop pages cuz apparently the
-                        internet didn't have enough crap already.
+                        internet didn&apos;t have enough crap already.
                     </motion.p>
                 </motion.header>
 
@@ -261,7 +261,12 @@ export default function HomePage() {
 
                                     <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 bg-gradient-to-br from-pink-200 to-blue-200 rounded-full flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
                                         <Icon
-                                            type={feature.icon as any}
+                                            type={
+                                                feature.icon as
+                                                    | "sparkles"
+                                                    | "dice"
+                                                    | "analytics"
+                                            }
                                             className="w-8 h-8 sm:w-10 sm:h-10 text-purple-600"
                                         />
                                     </div>

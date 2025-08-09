@@ -111,7 +111,7 @@ export default function SlugPage() {
                                         url.pathname + url.search + url.hash;
                                     window.location.href = path;
                                 }
-                            } catch (err) {
+                            } catch {
                                 // Relative link - navigate in parent window
                                 window.location.href = link.href;
                             }
@@ -142,7 +142,7 @@ export default function SlugPage() {
         };
 
         generatePage();
-    }, [fullPath]);
+    }, [fullPath, pathname, setGenerationStats]);
 
     if (error) {
         return (
