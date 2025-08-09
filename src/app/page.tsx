@@ -312,7 +312,7 @@ export default function HomePage() {
 
                 {/* Stats Section */}
                 <motion.div
-                    className="w-full max-w-6xl px-4 sm:px-6 my-12"
+                    className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 space-y-8 sm:space-y-12 my-12"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 2.2 }}
