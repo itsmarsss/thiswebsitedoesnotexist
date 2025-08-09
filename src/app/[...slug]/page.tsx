@@ -20,6 +20,8 @@ const loadingMessages = [
     "Constructing virtual realities...",
 ];
 
+const excludePaths = ["/searchboard", "/"];
+
 export default function SlugPage() {
     const { setGenerationStats } = useGenerationStats();
     const pathname = usePathname();
@@ -121,11 +123,11 @@ export default function SlugPage() {
                 }
 
                 // Show generation stats if available and not on searchboard
-                if (pathname !== "/searchboard" && data.stats) {
+                if (!excludePaths.includes(pathname) && data.stats) {
                     setLocalGenerationStats(data.stats);
                     setGenerationStats(data.stats); // Update context
                     setShowStatsPopup(true);
-                } else if (pathname === "/searchboard") {
+                } else if (excludePaths.includes(pathname)) {
                     // Clear stats when on searchboard
                     setGenerationStats(null);
                 }
