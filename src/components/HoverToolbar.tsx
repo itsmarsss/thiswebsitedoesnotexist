@@ -45,22 +45,30 @@ export default function HoverToolbar() {
     const { generationStats } = useGenerationStats();
     const router = useRouter();
     const pathname = usePathname();
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
+            const mobile = window.innerWidth <= 768;
+            setIsMobile(mobile);
+
+            // On desktop, show briefly then hide
+            if (!mobile) {
+                setIsExpanded(true);
+                setTimeout(() => {
+                    setIsExpanded(false);
+                }, 2000);
+            } else {
+                // On mobile, start hidden
+                setIsExpanded(false);
+            }
         };
 
         checkMobile();
         window.addEventListener("resize", checkMobile);
-
-        setTimeout(() => {
-            setIsExpanded(false);
-        }, 2000);
 
         return () => window.removeEventListener("resize", checkMobile);
     }, []);
